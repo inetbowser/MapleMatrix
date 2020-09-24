@@ -1,0 +1,17 @@
+# Wireless device name that will be used for the Access Point
+AP_IFACE=wlp2s0
+
+# Device name that is used for the router's internal internet connection
+# packets from AP_IFACE will be forwarded to this device
+INTERNET_IFACE=eno1
+
+# Wireless network name (SSID), in this case a more vegan alternative to 'honeypot'
+SSID=MapleMatrix
+
+# Optional WPA2 password; if left empty network will be public
+PASSWORD=sector47
+
+# Optional randomization of AP_IFACE MAC address
+# can be set to a specific value like "XX:XX:XX:XX:XX:XX"
+# or "unchanged" to leave the device MAC alone
+MAC=random
