@@ -3,7 +3,7 @@
 This code is a fork of [Brannon Dorsey's mitm-router](https://github.com/brannondorsey/mitm-router) which has been updated and improved.
 
 #### mitm-router (simple description)
-Turn any linux computer into a public Wi-Fi network that silently mitms all HTTP traffic. Runs inside a Docker container using [hostapd](https://wiki.gentoo.org/wiki/Hostapd), [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html), and [mitmproxy](https://mitmproxy.org/) to create a open honeypot wireless network named "Public".
+Turn any linux computer into a public Wi-Fi network that silently mitms all HTTP traffic. Runs inside a Docker container using [hostapd](https://wiki.gentoo.org/wiki/Hostapd), [dnsmasq](http://www.thekelleys.org.uk/dnsmasq/doc.html), and [mitmproxy](https://mitmproxy.org/) to create a open honeypot wireless network.
 
 ## Improvements and Changes
 Building on `mitm-router`'s code, some improvements have been made:
