@@ -18,7 +18,7 @@ Building on `mitm-router`'s code, some improvements have been made:
 | Default binary                  | `mitmdump`           | `mitmweb`          |
 | Network dump                    | `mitmdump`           | `tshark`           |
 | Build / run                     | Docker commands      | Makefile           |
-| Rocker config                   | shell scripts        | Docker .env file   |
+| Docker config                   | shell scripts        | Docker .env file   |
 | Certificate Generation          | no                   | yes                |
 | Easy to adjust host ignore list | no                   | yes                |
 | mitmproxy script support        | no                   | yes                |
