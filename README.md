@@ -79,6 +79,8 @@ $ curl --cacert /path/to/mitmproxy-ca.crt https://http.cat/404 # should work wit
 
 If this is working, install the `mitmproxy-ca.crt` file permanently by following the standard mitmproxy instructions, found [here](https://docs.mitmproxy.org/stable/concepts-certificates/#installing-the-mitmproxy-ca-certificate-manually).  Note that browsers oftain maintain their own browser chains so you may have to install the certificate in a few places (eg: The OS itself but also chrome, firefox, etc).
 
+If you wish to MITM an android device, there is another `make` command to convert the generated cert into the proper "subject_hash_old" format.
+
 Otherwise, this code should operate like mitm-router.
 
 #### Configuring the Appliance
