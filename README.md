@@ -12,7 +12,7 @@ Building on `mitm-router`'s code, some improvements have been made:
 |---------------------------------|----------------------|--------------------|
 | Operating System                | Debian jessie        | Debian buster      |
 | Architecture                    | x86-64 only          | multiarch          |
-| mitmproxy version               | 2.0.2 ( April, 2017) | 5.1.1 (June, 2020) |
+| mitmproxy version               | 2.0.2 (April, 2017)  | 5.1.1 (June, 2020) |
 | Transparent mode                | no                   | yes                |
 | HTTPS traffic                   | no                   | yes                |
 | Default binary                  | `mitmdump`           | `mitmweb`          |
