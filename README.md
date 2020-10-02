@@ -52,11 +52,13 @@ In more detail:
 # edit the (self-documenting) basic-env file to your liking
 $ vim basic-env
 
-# Generate your own self-signed CA if desired using the built in Makefile
+# generate your own self-signed CA if desired using the built in Makefile
+#
 # Otherwise the mitmproxy apps will generate one automatically
 $ make generateCA
 
 # build the image
+#
 # (you might need sudo here, depending on how docker is configured)
 # Also, as a guideline, this took:
 #   * around 20 minutes on my Raspberry Pi 3B+!
@@ -64,6 +66,7 @@ $ make generateCA
 $ make build
 
 # run the appliance
+#
 # (you might need sudo here, depending on how docker is configured)
 $ make run
 ```
