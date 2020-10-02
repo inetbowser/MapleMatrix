@@ -52,8 +52,8 @@ In more detail:
 # edit the (self-documenting) basic-env file to your liking
 $ vim basic-env
 
-# Generate your own self-signed CA if the one commited to the repo has expired or you want to
-# Either way, save a copy of the `mitmproxy-ca.crt` file; you'll need this later.
+# Generate your own self-signed CA if desired using the built in Makefile
+# Otherwise the mitmproxy apps will generate one automatically
 $ make generateCA
 
 # build the image
