@@ -49,8 +49,8 @@ shell:
 #
 # alt cmd: openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout privateKey.key -out certificate.crt
 generateCA:
-	@openssl genrsa -out fake_ca/mitmproxy-ca.key 2048
-	@openssl req -new -sha1 -x509 -days 365 -subj '/C=UK/ST=Some-State/O=Internet Widgits Pty Ltd' -key fake_ca/mitmproxy-ca.key -out fake_ca/mitmproxy-ca.crt
+	@openssl genrsa -out fake_ca/mitmproxy-ca.key 4096
+	@openssl req -new -sha1 -x509 -days 365 -subj '/C=US/ST=Florida/L=Miami/O=Cool IT Company/OU=ITDept/CN=my.domain/emailAddress=hostmaster@my.domain' -key fake_ca/mitmproxy-ca.key -out fake_ca/mitmproxy-ca.crt
 	@cat fake_ca/mitmproxy-ca.key fake_ca/mitmproxy-ca.crt > fake_ca/mitmproxy-ca.pem
 	@openssl x509 -in fake_ca/mitmproxy-ca.pem -out fake_ca/mitmproxy-ca.der -outform DER
 

@@ -1,9 +1,9 @@
 # Wireless device name that will be used for the Access Point
-AP_IFACE=wlp2s0
+AP_IFACE=en0
 
 # Device name that is used for the router's internal internet connection
 # packets from AP_IFACE will be forwarded to this device
-INTERNET_IFACE=eno1
+INTERNET_IFACE=en17
 
 # Wireless network name (SSID), in this case a more vegan alternative to 'honeypot'
 SSID=MapleMatrix
