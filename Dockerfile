@@ -1,10 +1,10 @@
-FROM debian:buster
+FROM debian:bookworm
 
 LABEL maintainer="Jesse.Spielman@gmail.com"
 LABEL license="MIT"
 
 # Build time ARGs
-ARG MITM_VERSION=5.1.1
+ARG MITM_VERSION=11.0.0
 ARG LOGO=logo.ans
 
 # ENV vars
@@ -45,7 +45,7 @@ RUN wget https://github.com/mitmproxy/mitmproxy/archive/v${MITM_VERSION}.zip \
     && unzip v${MITM_VERSION}.zip \
     && rm v${MITM_VERSION}.zip \
     && ln -s mitmproxy-${MITM_VERSION} mitmproxy-src
-RUN cd mitmproxy-src && ./dev.sh && rm -rf ~/.cache/pip
+RUN cd mitmproxy-src && python3 -m venv venv && venv/bin/pip install -e ".[dev]" && rm -rf ~/.cache/pip
 
 # Copy over the pre-made CA files
 # This ensures the certificates are always the same

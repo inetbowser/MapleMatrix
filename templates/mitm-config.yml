@@ -10,7 +10,7 @@
 # Mode can be "regular", "transparent", "socks5", "reverse:SPEC", or
 # "upstream:SPEC". For reverse and upstream proxy modes, SPEC is host
 # specification in the form of "http[s]://host[:port]". Type str.
-mode: transparent
+mode: ["transparent"]
 
 # Use the Host header to construct URLs for display. Type bool.
 showhost: true
@@ -32,10 +32,10 @@ termlog_verbosity: alert
 #
 # Request/response streaming is enabled by specifying a size cutoff in the
 # `stream_large_bodies` option.
-stream_large_bodies: 25m
+stream_large_bodies: 100m
 
 # Set a large body size so our audio messages don't get cut off!
-body_size_limit: 25m
+body_size_limit: 2g
 
 # Web UI host. Type str.
 web_host: 0.0.0.0

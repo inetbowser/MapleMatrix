@@ -9,12 +9,12 @@ all: build run
 
 # Build the image
 build:
-	docker build . -t $(IMGNAME):$(VERSION) && echo Buildname: $(IMGNAME):$(VERSION)
+	sudo docker build . -t $(IMGNAME):$(VERSION) && echo Buildname: $(IMGNAME):$(VERSION)
 
 # Run the image in a new container
 run:
 	#TODO change i to d when we're sure...
-	docker run \
+	sudo docker run \
 		-i \
 		-t \
 		--net host \
@@ -22,15 +22,15 @@ run:
 		--hostname $(IMGNAME) \
 		--name $(IMGNAME)_run \
 		--env-file basic-env \
-		-v $(ROOT)/data:/root/data:consistent \
-		-v $(ROOT)/scripts:/root/scripts:consistent \
+		-v $(ROOT)/data:/root/data \
+		-v $(ROOT)/scripts:/root/scripts \
 		--rm \
 		$(IMGNAME):$(VERSION)
 
 # Test the image in a new container by going interactive just before the
 # entrypoint script is called
 shell:
-	docker run \
+	sudo docker run \
 		-i \
 		-t \
 		--net host \
@@ -38,8 +38,8 @@ shell:
 		--hostname $(IMGNAME) \
 		--name $(IMGNAME)_shell \
 		--env-file basic-env \
-		-v $(ROOT)/data:/root/data:consistent \
-		-v $(ROOT)/scripts:/root/scripts:consistent \
+		-v $(ROOT)/data:/root/data \
+		-v $(ROOT)/scripts:/root/scripts \
 		--entrypoint=/bin/bash \
 		--rm \
 		$(IMGNAME):$(VERSION)

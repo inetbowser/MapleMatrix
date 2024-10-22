@@ -1,10 +1,12 @@
 #!/bin/bash
 
 # Inherit from the docker environment or set default
-AP_IFACE="${AP_IFACE:-wlan0}"
+MITM_IFACE="${MITM_IFACE:-wlan0}"
+MITM_WLAN="${MITM_WLAN:-yes}"
 INTERNET_IFACE="${INTERNET_IFACE:-eth0}"
 SSID="${SSID:-Public}"
 MAC="${MAC:-random}"
+INTERCEPT_HTTPS="${INTERCEPT_HTTPS:-yes}"
 
 # Create some log-related vars
 NOW=$(date +%Y-%m-%d_%H-%M-%S)
@@ -15,48 +17,51 @@ touch $SSLKEYLOGFILE
 
 # spoof MAC address
 if [ "$MAC" != "unchanged" ] ; then
-    ifconfig "$AP_IFACE" down
+    ifconfig "$MITM_IFACE" down
     if [ "$MAC" == "random" ] ; then
         echo "using random MAC address"
-        macchanger -A "$AP_IFACE"
+        macchanger -A "$MITM_IFACE"
     else
         echo "setting MAC address to $MAC"
-        macchanger --mac "$MAC" "$AP_IFACE"
+        macchanger --mac "$MAC" "$MITM_IFACE"
     fi
     if [ ! $? ] ; then
         echo "Failed to change MAC address, aborting."
         exit 1
     fi
-    ifconfig "$AP_IFACE" up
+    ifconfig "$MITM_IFACE" up
 fi
 
-ifconfig "$AP_IFACE" 10.0.0.1/24
+ifconfig "$MITM_IFACE" 10.0.0.1/24
 
-# configure WPA password if provided
-if [ ! -z "$PASSWORD" ]; then
-
-  # password length check
-  if [ ! ${#PASSWORD} -ge 8 ] && [ ${#PASSWORD} -le 63 ]; then
-      echo "PASSWORD must be between 8 and 63 characters"
-      echo "password '$PASSWORD' has length: ${#PASSWORD}, exiting."
-      exit 1
-  fi
-
-  # uncomment WPA2 auth stuff in hostapd.conf
-  # replace the password with $PASSWORD
-  sed -i 's/#//' /etc/hostapd/hostapd.conf
-  sed -i "s/wpa_passphrase=.*/wpa_passphrase=$PASSWORD/g" /etc/hostapd/hostapd.conf
-fi
-
-# inject values into config templates -- TODO can probably do this at build time...
-sed -i "s/^ssid=.*/ssid=$SSID/g" /etc/hostapd/hostapd.conf
-sed -i "s/interface=.*/interface=$AP_IFACE/g" /etc/hostapd/hostapd.conf
-sed -i "s/interface=.*/interface=$AP_IFACE/g" /etc/dnsmasq.conf
+sed -i "s/interface=.*/interface=$MITM_IFACE/g" /etc/dnsmasq.conf
 
 # Start services
 /etc/init.d/dbus start
 /etc/init.d/dnsmasq start
-/etc/init.d/hostapd start
+
+if [ "$MITM_IFACE" == "yes" ]; then
+    # configure WPA password if provided
+    if [ ! -z "$PASSWORD" ]; then
+
+      # password length check
+      if [ ! ${#PASSWORD} -ge 8 ] && [ ${#PASSWORD} -le 63 ]; then
+          echo "PASSWORD must be between 8 and 63 characters"
+          echo "password '$PASSWORD' has length: ${#PASSWORD}, exiting."
+          exit 1
+      fi
+
+      # uncomment WPA2 auth stuff in hostapd.conf
+      # replace the password with $PASSWORD
+      sed -i 's/#//' /etc/hostapd/hostapd.conf
+      sed -i "s/wpa_passphrase=.*/wpa_passphrase=$PASSWORD/g" /etc/hostapd/hostapd.conf
+    fi
+
+    # inject values into config templates -- TODO can probably do this at build time...
+    sed -i "s/^ssid=.*/ssid=$SSID/g" /etc/hostapd/hostapd.conf
+    sed -i "s/interface=.*/interface=$MITM_IFACE/g" /etc/hostapd/hostapd.conf
+    /etc/init.d/hostapd start
+fi
 
 # Prep system for mitm's transparent mode
 # https://docs.mitmproxy.org/stable/howto-transparent/
@@ -74,35 +79,39 @@ if [ ! $? -eq 0 ] ; then
     iptables -t nat -A POSTROUTING -o "$INTERNET_IFACE" -j MASQUERADE
 fi
 
-iptables -C FORWARD -i "$INTERNET_IFACE" -o "$AP_IFACE" -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -C FORWARD -i "$INTERNET_IFACE" -o "$MITM_IFACE" -m state --state RELATED,ESTABLISHED -j ACCEPT
 if [ ! $? -eq 0 ] ; then
-    iptables -A FORWARD -i "$INTERNET_IFACE" -o "$AP_IFACE" -m state --state RELATED,ESTABLISHED -j ACCEPT
+    iptables -A FORWARD -i "$INTERNET_IFACE" -o "$MITM_IFACE" -m state --state RELATED,ESTABLISHED -j ACCEPT
 fi
 
-iptables -C FORWARD -i "$AP_IFACE" -o "$INTERNET_IFACE" -j ACCEPT
+iptables -C FORWARD -i "$MITM_IFACE" -o "$INTERNET_IFACE" -j ACCEPT
 if [ ! $? -eq 0 ] ; then
-    iptables -A FORWARD -i "$AP_IFACE" -o "$INTERNET_IFACE" -j ACCEPT
+    iptables -A FORWARD -i "$MITM_IFACE" -o "$INTERNET_IFACE" -j ACCEPT
 fi
 
 #### 3. Create an iptables ruleset that redirects the desired traffic to mitmproxy
-iptables -t nat -C PREROUTING -i "$AP_IFACE" -p tcp --dport 80 -j REDIRECT --to-port 8080
+iptables -t nat -C PREROUTING -i "$MITM_IFACE" -p tcp --dport 80 -j REDIRECT --to-port 8080
 if [ ! $? -eq 0 ] ; then
-    iptables -t nat -A PREROUTING -i "$AP_IFACE" -p tcp --dport 80 -j REDIRECT --to-port 8080
+    iptables -t nat -A PREROUTING -i "$MITM_IFACE" -p tcp --dport 80 -j REDIRECT --to-port 8080
 fi
 
-iptables -t nat -C PREROUTING -i "$AP_IFACE" -p tcp --dport 443 -j REDIRECT --to-port 8080
-if [ ! $? -eq 0 ] ; then
-    iptables -t nat -A PREROUTING -i "$AP_IFACE" -p tcp --dport 443 -j REDIRECT --to-port 8080
+if [ "$INTERCEPT_HTTPS" == "yes" ]; then
+    iptables -t nat -C PREROUTING -i "$MITM_IFACE" -p tcp --dport 443 -j REDIRECT --to-port 8080
+    if [ ! $? -eq 0 ] ; then
+        iptables -t nat -A PREROUTING -i "$MITM_IFACE" -p tcp --dport 443 -j REDIRECT --to-port 8080
+    fi
 fi
 
-ip6tables -t nat -C PREROUTING -i "$AP_IFACE" -p tcp --dport 80 -j REDIRECT --to-port 8080
+ip6tables -t nat -C PREROUTING -i "$MITM_IFACE" -p tcp --dport 80 -j REDIRECT --to-port 8080
 if [ ! $? -eq 0 ] ; then
-    ip6tables -t nat -A PREROUTING -i "$AP_IFACE" -p tcp --dport 80 -j REDIRECT --to-port 8080
+    ip6tables -t nat -A PREROUTING -i "$MITM_IFACE" -p tcp --dport 80 -j REDIRECT --to-port 8080
 fi
 
-ip6tables -t nat -C PREROUTING -i "$AP_IFACE" -p tcp --dport 443 -j REDIRECT --to-port 8080
-if [ ! $? -eq 0 ] ; then
-    ip6tables -t nat -A PREROUTING -i "$AP_IFACE" -p tcp --dport 443 -j REDIRECT --to-port 8080
+if [ "$INTERCEPT_HTTPS" == "yes" ]; then
+    ip6tables -t nat -C PREROUTING -i "$MITM_IFACE" -p tcp --dport 443 -j REDIRECT --to-port 8080
+    if [ ! $? -eq 0 ] ; then
+        ip6tables -t nat -A PREROUTING -i "$MITM_IFACE" -p tcp --dport 443 -j REDIRECT --to-port 8080
+    fi
 fi
 
 # All the networking is setup -- lets display our logo :-)
@@ -118,7 +127,7 @@ printf "\n"
 # need to do some hax to write to /root
 # https://bugzilla.redhat.com/show_bug.cgi?id=850768
 echo "tshark: capturing traffic to $CAPTURE_FILE"
-tshark -Q -i $AP_IFACE -w - > "$CAPTURE_FILE" &
+tshark -Q -i $MITM_IFACE -w - > "$CAPTURE_FILE" &
 TSHARK_PID=$!
 
 #### 4) Fire up mitmweb (in transparent mode)
