@@ -40,7 +40,7 @@ sed -i "s/interface=.*/interface=$MITM_IFACE/g" /etc/dnsmasq.conf
 /etc/init.d/dbus start
 /etc/init.d/dnsmasq start
 
-if [ "$MITM_IFACE" == "yes" ]; then
+if [ "$MITM_WLAN" == "yes" ]; then
     # configure WPA password if provided
     if [ ! -z "$PASSWORD" ]; then
 
